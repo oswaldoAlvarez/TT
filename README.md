@@ -2,6 +2,8 @@
   <img src="./assets/tt-icon-1024.png" alt="TT App Icon" width="400" />
 </p>
 
+https://github.com/user-attachments/assets/8e1a8892-ae9b-4781-914b-f22dc963aac1
+
 ````md
 # TT — 3D Instances (Expo + React Three Fiber)
 
