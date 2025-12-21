@@ -1,0 +1,24 @@
+{
+    "expo": {
+      "name": "TT",
+      "slug": "tt",
+      "scheme": "tt",
+      "version": "1.0.0",
+      "orientation": "portrait",
+      "assetBundlePatterns": ["**/*"],
+      "plugins": ["expo-router"],
+      "icon": "./assets/tt-icon-1024.png",
+      "ios": {
+        "supportsTablet": true,
+        "bundleIdentifier": "com.oswaldoalvarez.TT"
+      },
+      "android": {
+        "package": "com.oswaldoalvarez.TT",
+        "adaptiveIcon": {
+          "foregroundImage": "./assets/tt-icon-1024.png",
+          "backgroundColor": "#111111"
+        }
+      }
+    }
+  }
+  
