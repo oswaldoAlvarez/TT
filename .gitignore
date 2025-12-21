@@ -17,9 +17,14 @@ ios/build/
 android/.gradle/
 android/build/
 android/app/build/
-.git_broken_backup/
+
+# Expo generated native folders (do not commit when using Expo Go)
 ios/
 android/
+
+# Temporary recover folder
+.git_broken_backup/
+TT_BACKUP_*.tgz
 
 # Secrets / Keys
 *.jks
