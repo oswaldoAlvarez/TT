@@ -14,7 +14,7 @@
     "icon": "./assets/tt-icon-1024.png",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.oswaldoalvarez.TT"
+      "bundleIdentifier": "com.oswaldoalvarez.tt"
     },
     "android": {
       "package": "com.oswaldoalvarez.tt",
