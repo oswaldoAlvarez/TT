@@ -12,6 +12,7 @@ export type Instance3D = {
   color: string
   ring: boolean
   hasContinents: boolean
+  name: string
   scale: number
   position: Vector3Tuple
   rotation: Vector3Tuple
@@ -49,6 +50,7 @@ const sanitizeInstance = (candidate: any): Instance3D | null => {
   const ring = typeof candidate.ring === 'boolean' ? candidate.ring : false
   const hasContinents =
     typeof candidate.hasContinents === 'boolean' ? candidate.hasContinents : false
+  const name = typeof candidate.name === 'string' ? candidate.name : null
   const scale = isFiniteNumber(candidate.scale) ? candidate.scale : 1
 
   const position: Vector3Tuple = isVector3Tuple(candidate.position)
@@ -63,7 +65,9 @@ const sanitizeInstance = (candidate: any): Instance3D | null => {
 
   if (!id) return null
 
-  return { id, type, color, ring, hasContinents, scale, position, rotation, createdAt }
+  if (!name) return null
+
+  return { id, type, color, ring, hasContinents, name, scale, position, rotation, createdAt }
 }
 
 const sanitizeInstances = (value: any): Instance3D[] => {
@@ -75,6 +79,25 @@ const randomFloat = (min: number, max: number) => min + Math.random() * (max - m
 
 const PLANET_COLORS = ['#3B82F6', '#F97316', '#10B981', '#F43F5E', '#A855F7', '#EAB308']
 const CONTINENT_PROBABILITY = 0.45
+
+const randomInt = (min: number, max: number) =>
+  Math.floor(min + Math.random() * (max - min + 1))
+
+const randomLetter = () => String.fromCharCode(97 + randomInt(0, 4))
+
+const createPlanetName = () => {
+  const roll = Math.random()
+  if (roll < 0.5) {
+    return `Kepler-${randomInt(1, 999).toString().padStart(3, '0')}`
+  }
+  if (roll < 0.8) {
+    return `TRAPPIST-1${randomLetter()}`
+  }
+  if (roll < 0.93) {
+    return `HD ${randomInt(10000, 199999)} ${randomLetter()}`
+  }
+  return `GJ ${randomInt(100, 999)} ${randomLetter()}`
+}
 const randomPlanetColor = () => PLANET_COLORS[Math.floor(Math.random() * PLANET_COLORS.length)]
 
 const createInstanceId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
@@ -85,6 +108,7 @@ const createRandomInstance = (): Instance3D => ({
   color: randomPlanetColor(),
   ring: Math.random() < 0.28,
   hasContinents: Math.random() < CONTINENT_PROBABILITY,
+  name: createPlanetName(),
   scale: randomFloat(0.65, 1.25),
   position: [0, 0, 0],
   rotation: [0, randomFloat(0, Math.PI), 0],
@@ -167,6 +191,7 @@ export const useInstancesStore = create<InstancesState>()(
           color: '#3B82F6',
           ring: false,
           hasContinents: true,
+          name: 'Kepler-001',
           scale: 1,
           position: [0, 0, 0],
           rotation: [0, 0, 0],
@@ -200,6 +225,7 @@ export const useInstancesStore = create<InstancesState>()(
               color: '#3B82F6',
               ring: false,
               hasContinents: true,
+              name: 'Kepler-001',
               scale: 1,
               position: [0, 0, 0],
               rotation: [0, 0, 0],

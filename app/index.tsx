@@ -30,14 +30,17 @@ const Home = () => {
 
   const instanceCount = useInstancesStore((state) => state.instances.length)
   const selectedInstanceId = useInstancesStore((state) => state.selectedId)
+  const selectedInstanceName = useInstancesStore((state) =>
+    state.instances.find((instance) => instance.id === state.selectedId)?.name
+  )
 
   const generateInstance = useInstancesStore((state) => state.addRandomInstance)
   const clearInstances = useInstancesStore((state) => state.clear)
 
   const overlayLabel = useMemo(() => {
-    const selectedLabel = selectedInstanceId ? ` | Selected: ${selectedInstanceId}` : ''
+    const selectedLabel = selectedInstanceName ? ` | Selected: ${selectedInstanceName}` : ''
     return `Instances: ${instanceCount}${selectedLabel}`
-  }, [instanceCount, selectedInstanceId])
+  }, [instanceCount, selectedInstanceId, selectedInstanceName])
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
