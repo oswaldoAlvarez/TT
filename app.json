@@ -1,24 +1,34 @@
 {
-    "expo": {
-      "name": "TT",
-      "slug": "tt",
-      "scheme": "tt",
-      "version": "1.0.0",
-      "orientation": "portrait",
-      "assetBundlePatterns": ["**/*"],
-      "plugins": ["expo-router"],
-      "icon": "./assets/tt-icon-1024.png",
-      "ios": {
-        "supportsTablet": true,
-        "bundleIdentifier": "com.oswaldoalvarez.TT"
-      },
-      "android": {
-        "package": "com.oswaldoalvarez.TT",
-        "adaptiveIcon": {
-          "foregroundImage": "./assets/tt-icon-1024.png",
-          "backgroundColor": "#111111"
-        }
+  "expo": {
+    "name": "TT",
+    "slug": "tt",
+    "scheme": "tt",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-router"
+    ],
+    "icon": "./assets/tt-icon-1024.png",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.oswaldoalvarez.TT"
+    },
+    "android": {
+      "package": "com.oswaldoalvarez.tt",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/tt-icon-1024.png",
+        "backgroundColor": "#111111"
+      }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c7bf542d-d501-40f8-8a46-f6619300bcc3"
       }
     }
   }
-  
+}
