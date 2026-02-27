@@ -8,8 +8,8 @@ import { useInstancesStore } from '../store/instance.hook'
 
 const BACKGROUND_COLOR = '#111111'
 
-const AMBIENT_LIGHT_INTENSITY = 0.5
-const DIRECTIONAL_LIGHT_INTENSITY = 3.0
+const AMBIENT_LIGHT_INTENSITY = 0.7
+const DIRECTIONAL_LIGHT_INTENSITY = 2.6
 const DIRECTIONAL_LIGHT_POSITION: [number, number, number] = [4, 2, 4]
 
 const CAMERA_POSITION: [number, number, number] = [0, 1.2, 6]
@@ -55,6 +55,7 @@ const CameraControls = ({ OrbitControls }: { OrbitControls: any }) => {
 }
 
 export const Scene = () => {
+  const isIOS = Platform.OS === 'ios'
   const [OrbitControls, events] = useControls()
 
   const instances = useInstancesStore((state) => state.instances)
@@ -66,13 +67,20 @@ export const Scene = () => {
     if (Platform.OS === 'ios') return 1
     return Math.min(2, PixelRatio.get())
   }, [])
+  const frameLoop = Platform.OS === 'ios' ? 'always' : 'demand'
 
   return (
-    <View {...events} style={{ flex: 1 }}>
+    <View style={{ flex: 1, backgroundColor: BACKGROUND_COLOR }} {...events}>
       <Canvas
         style={{ flex: 1 }}
-        {...({ frameloop: 'demand', dpr } as any)}
-        gl={{ antialias: false, alpha: false, depth: true, stencil: false }}
+        {...({ frameloop: frameLoop, dpr } as any)}
+        gl={{
+          antialias: false,
+          alpha: false,
+          depth: true,
+          stencil: false,
+          powerPreference: 'low-power',
+        }}
         camera={{ position: CAMERA_POSITION, fov: CAMERA_FOV }}
         onCreated={({ gl, camera }) => {
           gl.setClearColor(BACKGROUND_COLOR)
@@ -87,7 +95,7 @@ export const Scene = () => {
 
         <CameraControls OrbitControls={OrbitControls} />
 
-        <InvalidateOnChange deps={[instances.length, selectedId, lastCreatedId]} />
+        <InvalidateOnChange deps={[instances, selectedId, lastCreatedId]} />
 
         {instances.map((instance) => (
           <InstanceMesh

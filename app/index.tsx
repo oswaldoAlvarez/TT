@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { Pressable, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
@@ -15,6 +15,19 @@ const BUTTON_RADIUS = 12
 const BUTTON_VERTICAL_PADDING = 14
 
 const Home = () => {
+  useEffect(() => {
+    const originalLog = console.log
+    console.log = (...args: any[]) => {
+      if (typeof args[0] === 'string' && args[0].includes('EXGL: gl.pixelStorei')) {
+        return
+      }
+      originalLog(...args)
+    }
+    return () => {
+      console.log = originalLog
+    }
+  }, [])
+
   const instanceCount = useInstancesStore((state) => state.instances.length)
   const selectedInstanceId = useInstancesStore((state) => state.selectedId)
 

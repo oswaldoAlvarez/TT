@@ -1,14 +1,17 @@
+import { Platform } from 'react-native'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { create } from 'zustand'
 import { createJSONStorage, persist } from 'zustand/middleware'
 
-export type ShapeType = 'box' | 'sphere'
+export type ShapeType = 'planet'
 export type Vector3Tuple = [number, number, number]
 
 export type Instance3D = {
   id: string
   type: ShapeType
   color: string
+  ring: boolean
+  hasContinents: boolean
   scale: number
   position: Vector3Tuple
   rotation: Vector3Tuple
@@ -24,8 +27,8 @@ type InstancesState = {
   select: (id: string | null) => void
 }
 
-const MAX_INSTANCES = 30
-const SPAWN_SPACING = 1.8
+const MAX_INSTANCES = Platform.OS === 'ios' ? 14 : 26
+const SPAWN_SPACING = Platform.OS === 'ios' ? 1.25 : 1.6
 const GOLDEN_ANGLE_RADIANS = Math.PI * (3 - Math.sqrt(5))
 const CENTER_INSTANCE_ID = 'center'
 
@@ -41,8 +44,11 @@ const sanitizeInstance = (candidate: any): Instance3D | null => {
   if (!candidate || typeof candidate !== 'object') return null
 
   const id = typeof candidate.id === 'string' ? candidate.id : null
-  const type: ShapeType = candidate.type === 'sphere' ? 'sphere' : 'box'
+  const type: ShapeType = 'planet'
   const color = typeof candidate.color === 'string' ? candidate.color : '#4C8DFF'
+  const ring = typeof candidate.ring === 'boolean' ? candidate.ring : false
+  const hasContinents =
+    typeof candidate.hasContinents === 'boolean' ? candidate.hasContinents : false
   const scale = isFiniteNumber(candidate.scale) ? candidate.scale : 1
 
   const position: Vector3Tuple = isVector3Tuple(candidate.position)
@@ -57,7 +63,7 @@ const sanitizeInstance = (candidate: any): Instance3D | null => {
 
   if (!id) return null
 
-  return { id, type, color, scale, position, rotation, createdAt }
+  return { id, type, color, ring, hasContinents, scale, position, rotation, createdAt }
 }
 
 const sanitizeInstances = (value: any): Instance3D[] => {
@@ -67,18 +73,19 @@ const sanitizeInstances = (value: any): Instance3D[] => {
 
 const randomFloat = (min: number, max: number) => min + Math.random() * (max - min)
 
-const randomColorHex = () => {
-  const value = Math.floor(Math.random() * 0xffffff)
-  return `#${value.toString(16).padStart(6, '0')}`
-}
+const PLANET_COLORS = ['#3B82F6', '#F97316', '#10B981', '#F43F5E', '#A855F7', '#EAB308']
+const CONTINENT_PROBABILITY = 0.45
+const randomPlanetColor = () => PLANET_COLORS[Math.floor(Math.random() * PLANET_COLORS.length)]
 
 const createInstanceId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`
 
 const createRandomInstance = (): Instance3D => ({
   id: createInstanceId(),
-  type: Math.random() < 0.5 ? 'box' : 'sphere',
-  color: randomColorHex(),
-  scale: randomFloat(0.6, 1.4),
+  type: 'planet',
+  color: randomPlanetColor(),
+  ring: Math.random() < 0.28,
+  hasContinents: Math.random() < CONTINENT_PROBABILITY,
+  scale: randomFloat(0.65, 1.25),
   position: [0, 0, 0],
   rotation: [0, randomFloat(0, Math.PI), 0],
   createdAt: Date.now(),
@@ -95,26 +102,56 @@ const getSpiralSpawnPosition = (instanceIndex: number): Vector3Tuple => {
   return [x, y, z]
 }
 
+let storageDisabled = false
+let storageDisabledWarned = false
+
+const disableStorage = (error: unknown) => {
+  if (storageDisabled) return
+  const message = String(error)
+  if (!message.includes('Not a directory')) return
+
+  storageDisabled = true
+  if (!storageDisabledWarned) {
+    storageDisabledWarned = true
+    console.warn(
+      '[AsyncStorage] Disabled persistence due to invalid storage directory. ' +
+        'Delete the iOS app or reset the simulator to fix.'
+    )
+  }
+}
+
 const safeStorage = {
   getItem: async (key: string) => {
+    if (storageDisabled) return null
     try {
       return await AsyncStorage.getItem(key)
     } catch (error) {
+      const wasDisabled = storageDisabled
+      disableStorage(error)
+      if (storageDisabled && !wasDisabled) return null
       console.warn('[AsyncStorage] getItem failed:', error)
       return null
     }
   },
   setItem: async (key: string, value: string) => {
+    if (storageDisabled) return
     try {
       await AsyncStorage.setItem(key, value)
     } catch (error) {
+      const wasDisabled = storageDisabled
+      disableStorage(error)
+      if (storageDisabled && !wasDisabled) return
       console.warn('[AsyncStorage] setItem failed:', error)
     }
   },
   removeItem: async (key: string) => {
+    if (storageDisabled) return
     try {
       await AsyncStorage.removeItem(key)
     } catch (error) {
+      const wasDisabled = storageDisabled
+      disableStorage(error)
+      if (storageDisabled && !wasDisabled) return
       console.warn('[AsyncStorage] removeItem failed:', error)
     }
   },
@@ -126,8 +163,10 @@ export const useInstancesStore = create<InstancesState>()(
       instances: [
         {
           id: CENTER_INSTANCE_ID,
-          type: 'box',
-          color: '#4C8DFF',
+          type: 'planet',
+          color: '#3B82F6',
+          ring: false,
+          hasContinents: true,
           scale: 1,
           position: [0, 0, 0],
           rotation: [0, 0, 0],
@@ -152,7 +191,24 @@ export const useInstancesStore = create<InstancesState>()(
         })
       },
 
-      clear: () => set({ instances: [], selectedId: null, lastCreatedId: null }),
+      clear: () =>
+        set({
+          instances: [
+            {
+              id: CENTER_INSTANCE_ID,
+              type: 'planet',
+              color: '#3B82F6',
+              ring: false,
+              hasContinents: true,
+              scale: 1,
+              position: [0, 0, 0],
+              rotation: [0, 0, 0],
+              createdAt: Date.now(),
+            },
+          ],
+          selectedId: null,
+          lastCreatedId: null,
+        }),
 
       select: (id) =>
         set((state) => {
@@ -167,12 +223,17 @@ export const useInstancesStore = create<InstancesState>()(
       merge: (persistedState, currentState) => {
         const persisted: any = persistedState ?? {}
         const sanitizedInstances = sanitizeInstances(persisted.instances)
+        const validIds = new Set(sanitizedInstances.map((instance) => instance.id))
+        const selectedId =
+          typeof persisted.selectedId === 'string' && validIds.has(persisted.selectedId)
+            ? persisted.selectedId
+            : null
 
         return {
           ...currentState,
           ...persisted,
           instances: sanitizedInstances.length ? sanitizedInstances : currentState.instances,
-          selectedId: typeof persisted.selectedId === 'string' ? persisted.selectedId : null,
+          selectedId,
           lastCreatedId: null,
         }
       },
