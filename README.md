@@ -4,27 +4,26 @@
 
 https://github.com/user-attachments/assets/8e1a8892-ae9b-4781-914b-f22dc963aac1
 
-````md
 # TT — 3D Instances (Expo + React Three Fiber)
 
-A small Expo (SDK 54) app that renders interactive 3D instances (boxes & spheres) using **React Three Fiber** on React Native.  
-It supports **camera orbit controls**, **instance selection + highlight**, **spawn animations**, and **persistent state** (Zustand + AsyncStorage).
+An Expo (SDK 54) app that renders **interactive 3D planets** using **React Three Fiber** on React Native.  
+It supports **orbit controls**, **planet selection + highlight**, **spawn animations**, and **persisted state** (Zustand + AsyncStorage).
 
 ---
 
 ## ✨ Features
 
-- Generate random 3D instances (box / sphere) with:
-  - random color
-  - random scale
-  - random rotation
+- Generate random 3D planets with:
+  - random palette + scale + rotation
+  - optional rings
+  - optional continents (procedural texture)
   - deterministic spawn distribution (golden spiral) to reduce overlap
-- Tap an object to select it (highlight + subtle scale feedback)
+- Tap a planet to select it (highlight + subtle scale feedback)
 - Camera controls:
   - rotate + pinch-to-zoom (OrbitControls)
 - Smooth animations with `@react-spring/three`
 - State management with Zustand
-- Persisted state via AsyncStorage (instances survive reloads)
+- Persisted state via AsyncStorage (planets survive reloads)
 
 ---
 
@@ -60,7 +59,7 @@ git clone https://github.com/oswaldoAlvarez/TT.git
 git clone git@github.com:oswaldoAlvarez/TT.git
 
 cd TT
-````
+```
 
 ### 2) Install dependencies
 
@@ -109,6 +108,25 @@ npx expo start --clear
 ```bash
 npx expo start
 npx expo start --clear
+npm run build:dev
+npm run build:staging
+npm run build:prod
+```
+
+---
+
+## 📦 Builds (EAS)
+
+Profiles are defined in `eas.json`:
+
+- `development`: dev client APK (internal)
+- `preview`: internal APK (QA/testing)
+- `production`: AAB for Play Store
+
+Example:
+
+```bash
+eas build --platform android --profile production
 ```
 
 ---
@@ -118,7 +136,7 @@ npx expo start --clear
 ### “I don’t see the scene / it’s slow on iOS simulator”
 
 The iOS simulator can be significantly slower for GL rendering than a real device.
-This project uses `frameloop: 'demand'` plus throttled invalidation to keep it responsive.
+Try on a physical device for accurate performance.
 
 ### “Expo asks me to pick a simulator/device each time”
 
